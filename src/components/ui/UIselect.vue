@@ -38,7 +38,7 @@ type PropType = {
 };
 
 type EmitType = {
-  (e: "update:modelValue", value: unknown): void;
+  // (e: "update:modelValue", value: unknown): void;
   (e: "changeElement", value: unknown): void;
 };
 
@@ -48,7 +48,7 @@ const isListOpen = ref(false);
 const selectedItem = ref<HasIdName | null>(null);
 
 const select = (option: HasIdName) => {
-  emit("update:modelValue", option);
+  // emit("update:modelValue", option);
   emit("changeElement", option);
   selectedItem.value = option;
   isListOpen.value = false;

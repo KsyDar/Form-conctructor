@@ -61,7 +61,7 @@ const options = selectStore.options;
 const { selectedOption } = storeToRefs(useSelectStore());
 
 const changeElement = (option: HasIdName) => {
-  selectStore.updateSelectedOption(option);
+  if (option.name === "none") itemsStore.deleteElement();
 
   if (itemsStore.selectedItem?.type === TreeElementType.ELEMENT) {
     itemsStore.changeElement(option.name);
@@ -86,8 +86,6 @@ const changeElement = (option: HasIdName) => {
   flex-direction: column;
   align-items: center;
   color: $light-purple-color;
-  overflow-y: auto;
-  overflow-x: clip;
 
   &__title {
     color: #fff;

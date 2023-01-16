@@ -83,6 +83,8 @@ const selectedOption = (id: string) => {
   border: 1px solid #000;
   font-size: 1.5rem;
   width: 100%;
+  height: 30rem;
+  overflow: auto;
 
   &__col {
     background: #fff;

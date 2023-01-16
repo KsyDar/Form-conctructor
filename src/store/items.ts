@@ -98,6 +98,7 @@ export const useItemsStore = defineStore("items", {
 
         this.addProperties(element as Elements);
         this.selectItem(element.id);
+        this.saveChanges();
       }
     },
 
@@ -155,6 +156,32 @@ export const useItemsStore = defineStore("items", {
       });
     },
 
+    deleteElement(): void {
+      if (
+        this.selectedItem &&
+        this.selectedItem.type === TreeElementType.ROW &&
+        this.selectedItem.element
+      ) {
+        this.selectedItem.element = null;
+      }
+
+      if (
+        this.selectedItem &&
+        this.selectedItem.type === TreeElementType.ELEMENT
+      ) {
+        for (const [index, col] of this.items.cols.entries()) {
+          if (!col.rows) return;
+          for (const row of this.items.cols[index].rows) {
+            if (!row.element) return;
+            if (row.element.id === this.selectedItemId) {
+              row.element = null;
+              this.selectedItemId = this.items.cols[0].id;
+            }
+          }
+        }
+      }
+    },
+
     selectItem(itemId: string): void {
       this.selectedItemId = itemId;
     },
@@ -188,6 +215,8 @@ export const useItemsStore = defineStore("items", {
         this.selectedItem.value = newElementValue;
         this.selectItem(this.selectedItem.id);
       }
+
+      this.saveChanges();
     },
 
     getProperies(

@@ -1,10 +1,11 @@
-import { TreeElementValue, type HasIdName } from "@/types/navigatorTree";
+import type { HasIdName } from "@/types/navigatorTree";
+import { TreeElementType, TreeElementValue } from "@/types/navigatorTree";
 import { defineStore } from "pinia";
 import { v4 } from "uuid";
+import { useItemsStore } from "./items";
 
 type SelectStore = {
   options: HasIdName[];
-  selectedOption: HasIdName;
 };
 
 export const useSelectStore = defineStore("select", {
@@ -35,13 +36,42 @@ export const useSelectStore = defineStore("select", {
     const selectedOption = options[0];
     return {
       options,
-      selectedOption,
     };
   },
 
-  actions: {
-    updateSelectedOption(option: HasIdName): void {
-      this.selectedOption = option;
+  // actions: {
+  //   updateSelectedOption(option: HasIdName): void {
+  //     this.selectedOption = option;
+  //   },
+  // },
+
+  getters: {
+    selectedOption(): HasIdName {
+      const itemsStore = useItemsStore();
+      if (
+        itemsStore.selectedItem &&
+        itemsStore.selectedItem.type === TreeElementType.ROW
+      ) {
+        if (!itemsStore.selectedItem.element) return this.options[0];
+        return (
+          this.options.find(
+            (el) => el.name === itemsStore.selectedItem.element.value
+          ) || this.options[0]
+        );
+      }
+
+      if (
+        itemsStore.selectedItem &&
+        itemsStore.selectedItem.type === TreeElementType.ELEMENT
+      ) {
+        return (
+          this.options.find(
+            (el) => el.name === itemsStore.selectedItem.value
+          ) || this.options[0]
+        );
+      }
+
+      return this.options[0];
     },
   },
 });

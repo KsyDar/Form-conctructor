@@ -17,6 +17,6 @@ import Properties from "./components/properties/Properties.vue";
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 1fr 3fr 2fr;
+  grid-template-columns: 1fr 3fr 1fr;
 }
 </style>
