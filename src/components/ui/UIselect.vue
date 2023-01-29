@@ -1,15 +1,16 @@
 <template>
   <div class="select" ref="target">
     <div class="select__input">
-      <input
-        type="text"
-        readonly
-        :value="selectedItem?.name"
-        @click="isListOpen = !isListOpen"
+      <UITextField
+        :label="label"
+        :readonly="true"
+        v-model="selectedOption.name"
       />
-      <button class="select__button" @click.prevent="isListOpen = !isListOpen">
-        ▼
-      </button>
+      <ArrowIcon
+        class="select__icon"
+        @click.prevent="isListOpen = !isListOpen"
+        :class="{ 'select__icon--rotate': isListOpen }"
+      />
     </div>
 
     <div v-if="isListOpen">
@@ -29,80 +30,90 @@
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import type { HasIdName } from "@/types/navigatorTree";
+import type { HasIdName, TreeChildType } from "@/types/navigatorTree";
 import { onClickOutside } from "@vueuse/core";
+import { storeToRefs } from "pinia";
+import { useItemsStore } from "@/store/items";
+import UITextField from "./UITextField.vue";
+import ArrowIcon from "../../assets/icons/arrow.svg";
 
 type PropType = {
   options: HasIdName[];
-  modelValue?: HasIdName;
+  modelValue: HasIdName;
+  label: string;
 };
 
 type EmitType = {
-  // (e: "update:modelValue", value: unknown): void;
-  (e: "changeElement", value: unknown): void;
+  (e: "update:modelValue", value: unknown): void;
+  (e: "changeItem", value: unknown): void;
 };
 
 const props = defineProps<PropType>();
 const emit = defineEmits<EmitType>();
 const isListOpen = ref(false);
-const selectedItem = ref<HasIdName | null>(null);
+const selectedOption = ref<HasIdName>(props.options[0]);
 
 const select = (option: HasIdName) => {
-  // emit("update:modelValue", option);
-  emit("changeElement", option);
-  selectedItem.value = option;
+  emit("update:modelValue", option);
+  emit("changeItem", option.name);
+  selectedOption.value = option;
   isListOpen.value = false;
 };
+
+const { selectedItem } = storeToRefs(useItemsStore());
 
 watch(
   () => props.modelValue,
   () => {
-    selectedItem.value =
-      props.options.find(
-        (option: HasIdName) => option.name === props.modelValue?.name
-      ) || null;
+    selectedOption.value = props.modelValue;
   },
   { immediate: true }
 );
 
 const target = ref(null);
 
-onClickOutside(target, (event) => (isListOpen.value = false));
+onClickOutside(target, () => (isListOpen.value = false));
 </script>
 
 <style scoped lang="scss">
+@use "@/assets/styles/variables" as *;
 .select {
   display: flex;
   flex-direction: column;
-  max-width: fit-content;
+  width: 100%;
   color: #000;
   position: relative;
 
-  &__input {
-    display: flex;
-    flex-direction: row;
-    position: relative;
-  }
-
-  &__button {
+  &__icon {
     position: absolute;
     right: 0;
-    z-index: 1;
-    height: 100%;
+    top: 29%;
+    cursor: pointer;
+
+    &--rotate {
+      rotate: 180deg;
+    }
   }
 
   &__list {
     list-style: none;
     padding: 0;
+    padding-bottom: 1rem;
     font-size: 1.5rem;
+    color: $secondary-font-color;
     position: absolute;
     z-index: 999;
     background: #fff;
     width: 100%;
+    box-shadow: rgb(67 71 85 / 27%) 0px 0px 0.25em,
+      rgb(90 125 188 / 5%) 0px 0.25em 1em;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-radius: 10px;
 
     &__items {
       padding: 0.5rem;
-      border-bottom: 1px solid #000;
+      border-bottom: 0.2rem solid $secondary-font-color;
 
       &:hover {
         cursor: pointer;
@@ -112,6 +123,3 @@ onClickOutside(target, (event) => (isListOpen.value = false));
   }
 }
 </style>
-
-function onClickOutside(target: any, arg1: (event: any) => void) { throw new
-Error("Function not implemented."); }

@@ -7,16 +7,17 @@
 </template>
 
 <script setup lang="ts">
-import Navigator from "./components/Navigator.vue";
-import Maket from "./components/Maket.vue";
+import Navigator from "./components/navigator/Navigator.vue";
+import Maket from "./components/maket/Maket.vue";
 import Properties from "./components/properties/Properties.vue";
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@use "@/assets/styles/variables" as *;
 .main-wrapper {
   width: 100%;
   height: 100%;
-  display: grid;
-  grid-template-columns: 1fr 3fr 1fr;
+  display: flex;
+  background: $main-background-color;
 }
 </style>

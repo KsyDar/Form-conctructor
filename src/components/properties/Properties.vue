@@ -4,41 +4,36 @@
     <div v-if="selectedItem" class="properties__content">
       <ul class="properties__list">
         <li class="properties__list__item">
-          <span>Название:</span>
-          <input
-            class="properties__list__item__input"
-            type="text"
+          <UITextField
+            :label="'Название'"
             v-model="selectedItem.name"
-            maxlength="30"
+            @changed="itemsStore.saveChanges"
           />
         </li>
 
-        <li
-          class="properties__list__item"
-          v-if="selectedItem.type !== TreeElementType.COL"
-        >
-          <span>Тип элемента:</span>
+        <li class="properties__list__item">
           <UIselect
             v-model="selectedOption"
             :options="options"
-            @changeElement="changeElement($event)"
+            :label="'Тип элемента'"
+            @changeItem="itemsStore.changeItemType($event)"
           >
           </UIselect>
         </li>
 
         <li
           class="properties__list__item"
-          v-if="selectedItem.type === TreeElementType.ELEMENT"
+          v-if="selectedItem.type === TreeChildType.ELEMENT"
         >
           <ElementProperties />
         </li>
       </ul>
-      <button
+      <!-- <button
         class="properties__list__button"
         @click="itemsStore.saveChanges()"
       >
         Сохранить
-      </button>
+      </button> -->
     </div>
     <h3 class="properties__subtitle" v-else>Выберите селектор!</h3>
   </div>
@@ -46,49 +41,66 @@
 
 <script setup lang="ts">
 import { useItemsStore } from "@/store/items";
-import { useSelectStore } from "@/store/select";
 import { storeToRefs } from "pinia";
 import ElementProperties from "./elementsproperties/ElementProperties.vue";
 import UIselect from "../ui/UIselect.vue";
-import { TreeElementType } from "@/types/navigatorTree";
+import UITextField from "../ui/UITextField.vue";
+import { TreeChildType, TreeElementType } from "@/types/navigatorTree";
 import type { HasIdName } from "@/types/navigatorTree";
+import { v4 } from "uuid";
+import { ref, watch } from "vue";
 
 const { selectedItem } = storeToRefs(useItemsStore());
 const itemsStore = useItemsStore();
 
-const selectStore = useSelectStore();
-const options = selectStore.options;
-const { selectedOption } = storeToRefs(useSelectStore());
+const options: HasIdName[] = [
+  {
+    id: v4(),
+    name: TreeChildType.COL,
+  },
+  {
+    id: v4(),
+    name: TreeChildType.ROW,
+  },
+  {
+    id: v4(),
+    name: TreeChildType.ELEMENT,
+  },
+];
 
-const changeElement = (option: HasIdName) => {
-  if (option.name === "none") itemsStore.deleteElement();
+const selectedOption = ref<HasIdName>(options[0]);
 
-  if (itemsStore.selectedItem?.type === TreeElementType.ELEMENT) {
-    itemsStore.changeElement(option.name);
-  } else if (
-    itemsStore.selectedItem?.type === TreeElementType.ROW &&
-    itemsStore.selectedItem.element === null
-  ) {
-    itemsStore.addElement(option.name);
-  } else if (itemsStore.selectedItem?.type === TreeElementType.ROW) {
-    itemsStore.changeElement(option.name);
-  }
-};
+watch(
+  () => selectedItem.value,
+  () => {
+    if (selectedItem.value !== null) {
+      selectedOption.value = options.find(
+        (el) => el.name === selectedItem.value.type
+      );
+    } else {
+      selectedOption.value = options[0];
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped lang="scss">
 @use "@/assets/styles/variables" as *;
 
 .properties {
-  background: $primary-background-color;
-  height: 100%;
+  background: $white-color;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  border-radius: 10px;
+  margin: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: $light-purple-color;
+  color: $secondary-font-color;
+  min-width: 30rem;
 
   &__title {
-    color: #fff;
+    color: $primary-font-color;
   }
 
   &__subtitle {
@@ -116,10 +128,10 @@ const changeElement = (option: HasIdName) => {
       justify-content: space-between;
       align-items: flex-start;
       width: 100%;
-
-      &__input {
-        margin-left: 3rem;
-      }
+      border-radius: 10px;
+      box-shadow: rgb(67 71 85 / 27%) 0px 0px 0.25em,
+        rgb(90 125 188 / 5%) 0px 0.25em 1em;
+      padding: 1rem;
     }
 
     &__button {
