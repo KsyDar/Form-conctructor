@@ -2,246 +2,108 @@ import type {
   ButtonProps,
   CheckboxProperties,
   InputProperties,
-  NavigatorCol,
-  NavigatorRow,
   NavigatorTree,
   SelectProps,
-  TreeElement,
+  TreeChild,
   HasIdName,
-  Elements,
   Properties,
-  NavigatorElement,
 } from "@/types/navigatorTree";
-import { TreeElementType, TreeElementValue } from "@/types/navigatorTree";
+import { TreeElementType, TreeChildType } from "@/types/navigatorTree";
 import { defineStore } from "pinia";
 import { v4 } from "uuid";
 
 type ItemsStore = {
-  items: NavigatorTree;
-  selectedItemId: string | null;
+  items: TreeChild[];
+  selectedItem: TreeChild | null;
 };
 
 export const useItemsStore = defineStore("items", {
   state: (): ItemsStore => {
     const localTree = localStorage.getItem("tree");
-    const items: NavigatorTree = localTree
+    const items: TreeChild[] = localTree
       ? JSON.parse(localTree)
-      : {
-          cols: [
-            {
-              id: v4(),
-              name: "Колонка 1",
-              rows: [
-                {
-                  id: v4(),
-                  name: "Строка 1",
-                  type: TreeElementType.ROW,
-                  element: null,
-                },
-              ],
-              type: TreeElementType.COL,
-            },
-          ],
-        };
+      : [
+          {
+            id: v4(),
+            name: "Ребенок 1",
+            type: TreeChildType.COL,
+            children: [
+              {
+                id: v4(),
+                name: "Новая строка",
+                type: TreeChildType.ROW,
+                children: [
+                  {
+                    id: v4(),
+                    name: "Новая строка",
+                    type: TreeChildType.ROW,
+                    children: [],
+                  },
+                  {
+                    id: v4(),
+                    name: "Элемент 1",
+                    type: TreeChildType.ELEMENT,
+                    value: TreeElementType.INPUT,
+                    children: [],
+                    properties: {
+                      maxLength: "20",
+                      label: "",
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ];
 
-    const selectedItemId = items.cols[0].id;
+    const selectedItem = items[0];
     return {
       items,
-      selectedItemId,
+      selectedItem,
     };
   },
 
   actions: {
-    addCol(): void {
-      const newRows: NavigatorRow[] = [];
-      for (let i = 0; i < this.items.cols[0].rows.length; i++) {
-        newRows.push({
-          id: v4(),
-          name: "Я новая строка",
-          type: TreeElementType.ROW,
-          element: null,
-        });
-      }
-
-      const newCol: NavigatorCol = {
+    addItem(): void {
+      const newItem: TreeChild = {
         id: v4(),
-        name: "Я новая колонка",
-        rows: newRows,
-        type: TreeElementType.COL,
+        name: "Новый селектор",
+        type: TreeChildType.COL,
+        children: [],
       };
-
-      this.items.cols.push(newCol);
-    },
-
-    addRow(): void {
-      this.items.cols.forEach((col) => {
-        const newRow: NavigatorRow = {
-          id: v4(),
-          name: "Я новая строка",
-          type: TreeElementType.ROW,
-          element: null,
-        };
-        col.rows.push(newRow);
-      });
-    },
-
-    addElement(newElement: TreeElementValue) {
-      if (this.selectedItem && this.selectedItem.type === TreeElementType.ROW) {
-        const element: NavigatorElement = {
-          id: v4(),
-          name: "Новый элемент",
-          type: TreeElementType.ELEMENT,
-          value: newElement,
-          properties: this.getProperies(null, newElement),
-        };
-        this.selectedItem.element = element as Elements;
-
-        this.addProperties(element as Elements);
-        this.selectItem(element.id);
-        this.saveChanges();
-      }
-    },
-
-    addProperties(element: Elements | null) {
-      if (element === null) return;
-
-      switch (element.value) {
-        case TreeElementValue.INPUT:
-          {
-            element.properties = {
-              label: "",
-              maxLength: "",
-            };
-          }
-          break;
-        case TreeElementValue.CHECKBOX:
-          element.properties = {
-            label: "",
-            modelValue: false,
-          };
-          break;
-        case TreeElementValue.SELECT:
-          {
-            element.properties = {
-              label: "",
-              options: [
-                {
-                  id: v4(),
-                  name: "Опция 1",
-                },
-              ],
-              modelValue: null,
-            };
-
-            const selectedOption = element.properties.options[0];
-            element.properties.modelValue = selectedOption;
-          }
-          break;
-        case TreeElementValue.BUTTON:
-          element.properties = {
-            label: "",
-            function: undefined,
-          };
-          break;
-      }
-    },
-
-    deleteCol(): void {
-      if (this.items.cols.length > 1) this.items.cols.pop();
-    },
-
-    deleteRow(): void {
-      this.items.cols.forEach((col) => {
-        if (col.rows.length > 1) col.rows.pop();
-      });
-    },
-
-    deleteElement(): void {
-      if (
-        this.selectedItem &&
-        this.selectedItem.type === TreeElementType.ROW &&
-        this.selectedItem.element
-      ) {
-        this.selectedItem.element = null;
-      }
-
-      if (
-        this.selectedItem &&
-        this.selectedItem.type === TreeElementType.ELEMENT
-      ) {
-        for (const [index, col] of this.items.cols.entries()) {
-          if (!col.rows) return;
-          for (const row of this.items.cols[index].rows) {
-            if (!row.element) return;
-            if (row.element.id === this.selectedItemId) {
-              row.element = null;
-              this.selectedItemId = this.items.cols[0].id;
-            }
-          }
-        }
-      }
-    },
-
-    selectItem(itemId: string): void {
-      this.selectedItemId = itemId;
-    },
-
-    changeElement(newElementValue: TreeElementValue) {
-      if (
-        this.selectedItem &&
-        this.selectedItem.type === TreeElementType.ROW &&
-        this.selectedItem.element
-      ) {
-        if (this.selectedItem.element.value === newElementValue) return;
-
-        this.selectedItem.element.properties = this.getProperies(
-          this.selectedItem.element,
-          newElementValue
-        );
-        this.selectedItem.element.value = newElementValue;
-        this.selectItem(this.selectedItem.element.id);
-      }
-
-      if (
-        this.selectedItem &&
-        this.selectedItem.type === TreeElementType.ELEMENT
-      ) {
-        if (this.selectedItem.value === newElementValue) return;
-
-        this.selectedItem.properties = this.getProperies(
-          this.selectedItem,
-          newElementValue
-        );
-        this.selectedItem.value = newElementValue;
-        this.selectItem(this.selectedItem.id);
+      if (this.selectedItem) {
+        if (this.selectedItem.type === TreeChildType.ELEMENT) return;
+        this.selectedItem.children.push(newItem);
+      } else {
+        this.items.push(newItem);
       }
 
       this.saveChanges();
     },
 
-    getProperies(
-      element: Elements | null,
-      elementValue: TreeElementValue
-    ): Properties {
-      switch (elementValue) {
-        case TreeElementValue.INPUT:
+    addProperties() {
+      const element: TreeChild | null = this.selectedItem;
+      if (!element || element.type !== TreeChildType.ELEMENT) return;
+
+      switch (element.value) {
+        case TreeElementType.INPUT:
           {
-            return {
-              label: element?.properties.label || "",
+            element.properties = {
+              label: element?.properties?.label || "",
               maxLength: "",
             };
           }
           break;
-        case TreeElementValue.CHECKBOX:
-          return {
-            label: element?.properties.label || "",
+        case TreeElementType.CHECKBOX:
+          element.properties = {
+            label: element?.properties?.label || "",
             modelValue: false,
           };
           break;
-        case TreeElementValue.SELECT:
+        case TreeElementType.SELECT:
           {
-            const property: SelectProps<HasIdName> = {
-              label: element?.properties.label || "",
+            element.properties = {
+              label: element?.properties?.label || "",
               options: [
                 {
                   id: v4(),
@@ -250,20 +112,77 @@ export const useItemsStore = defineStore("items", {
               ],
               modelValue: null,
             };
-
-            const selectedOption = property.options[0];
-            property.modelValue = selectedOption;
-            return property;
+            const selectedOption = element.properties.options[0];
+            element.properties.modelValue = selectedOption;
           }
           break;
-        case TreeElementValue.BUTTON:
-          return {
-            label: element?.properties.label || "",
+        case TreeElementType.BUTTON:
+          element.properties = {
+            label: element?.properties?.label || "",
             function: undefined,
           };
           break;
       }
-      throw new Error("Не найден тип элемента");
+    },
+
+    changeItemType(type: TreeChildType): void {
+      if (!this.selectedItem) return;
+      this.selectedItem.type = type;
+
+      if (type === TreeChildType.ELEMENT) {
+        if (this.selectedItem.children.length !== 0) {
+          this.selectedItem.children.length = 0;
+        }
+
+        this.selectedItem.value = TreeElementType.INPUT;
+        this.addProperties();
+        console.log(this.selectedItem.properties);
+      }
+
+      this.saveChanges();
+    },
+
+    changeElementType(value: TreeElementType): void {
+      if (
+        !this.selectedItem ||
+        this.selectedItem.type !== TreeChildType.ELEMENT
+      )
+        return;
+      this.selectedItem.value = value;
+      this.addProperties();
+      this.saveChanges();
+    },
+
+    deleteItem(): void {
+      if (!this.selectedItem) return;
+      const selectedItemId = this.selectedItem.id;
+      let currentChilds: TreeChild[] | null = null;
+      getItem(this.items);
+
+      function getItem(items: TreeChild[]) {
+        for (const child of items) {
+          if (child.id !== selectedItemId) {
+            if (currentChilds) return;
+            getItem(child.children);
+          } else {
+            items.splice(items.indexOf(child), 1);
+            currentChilds = items;
+          }
+        }
+      }
+
+      if (currentChilds) {
+        this.selectItem(currentChilds[0]);
+        this.saveChanges();
+      }
+    },
+
+    selectItem(item: TreeChild | null): void {
+      this.selectedItem = item;
+    },
+
+    cleanSelectedItem(): void {
+      this.selectedItem = null;
     },
 
     updateElementProperties(
@@ -275,17 +194,19 @@ export const useItemsStore = defineStore("items", {
     ): void {
       if (
         this.selectedItem &&
-        this.selectedItem.type === TreeElementType.ELEMENT
+        this.selectedItem.type === TreeChildType.ELEMENT
       ) {
         this.selectedItem.properties = newProperties;
       }
+
+      this.saveChanges();
     },
 
     selectOption(option: HasIdName): void {
       if (
         this.selectedItem &&
-        this.selectedItem.type === TreeElementType.ELEMENT &&
-        this.selectedItem.value === TreeElementValue.SELECT
+        this.selectedItem.type === TreeChildType.ELEMENT &&
+        this.selectedItem.value === TreeElementType.SELECT
       ) {
         this.selectedItem.properties.modelValue = option;
       }
@@ -294,26 +215,6 @@ export const useItemsStore = defineStore("items", {
     saveChanges(): void {
       const currentTree = JSON.stringify(this.items);
       localStorage.setItem("tree", currentTree);
-    },
-  },
-
-  getters: {
-    colsCounter(): number {
-      return this.items.cols.length;
-    },
-    rowsCounter(): number {
-      return this.items.cols[0].rows.length;
-    },
-
-    selectedItem(state): TreeElement | null {
-      for (const [index, col] of state.items.cols.entries()) {
-        if (col.id === state.selectedItemId) return col;
-        for (const row of state.items.cols[index].rows) {
-          if (row.id === state.selectedItemId) return row;
-          if (row.element?.id === state.selectedItemId) return row.element;
-        }
-      }
-      return null;
     },
   },
 });

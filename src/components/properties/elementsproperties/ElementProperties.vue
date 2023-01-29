@@ -2,29 +2,41 @@
   <ul
     class="element-props"
     v-if="
-      selectedItem?.type === TreeElementType.ELEMENT && selectedItem.properties
+      selectedItem?.type === TreeChildType.ELEMENT && selectedItem.properties
     "
   >
     <li class="element-props__item">
-      <span>Ярлык:</span>
-      <input type="text" v-model="selectedItem.properties.label" />
+      <UITextField
+        :label="'Ярлык'"
+        v-model="selectedItem.properties.label"
+        @changed="itemsStore.saveChanges"
+      />
+    </li>
+
+    <li class="element-props__item">
+      <UIselect
+        v-model="selectedOption"
+        :options="options"
+        :label="'Вариант'"
+        @changeItem="itemsStore.changeElementType($event)"
+      >
+      </UIselect>
     </li>
 
     <li
       class="element-props__item"
-      v-if="selectedItem.value === TreeElementValue.INPUT"
+      v-if="selectedItem.value === TreeElementType.INPUT"
     >
-      <span>Количество символов:</span>
-      <input
-        class="element-props__item__input"
-        type="number"
+      <UITextField
+        :label="'Количество символов'"
         v-model="selectedItem.properties.maxLength"
+        @changed="itemsStore.saveChanges"
       />
     </li>
 
     <li
-      class="element-props__item"
-      v-if="selectedItem.value === TreeElementValue.SELECT"
+      class="element-props__item element-props__item--select"
+      v-if="selectedItem.value === TreeElementType.SELECT"
     >
       <SelectProperties
         :options="selectedItem.properties.options"
@@ -37,7 +49,7 @@
 
     <li
       class="element-props__item"
-      v-if="selectedItem.value === TreeElementValue.BUTTON"
+      v-if="selectedItem.value === TreeElementType.BUTTON"
     >
       <ButtonProperties @changeButton="changeButton($event)" />
     </li>
@@ -48,7 +60,8 @@
 import SelectProperties from "./SelectProperties.vue";
 import ButtonProperties from "./ButtonProperties.vue";
 import UIselect from "@/components/ui/UIselect.vue";
-import { TreeElementValue, TreeElementType } from "@/types/navigatorTree";
+import UITextField from "@/components/ui/UITextField.vue";
+import { TreeChildType, TreeElementType } from "@/types/navigatorTree";
 import type {
   HasIdName,
   SelectProps,
@@ -57,9 +70,48 @@ import type {
 import { storeToRefs } from "pinia";
 import { useItemsStore } from "@/store/items";
 import { v4 } from "uuid";
+import { ref, watch } from "vue";
 
 const { selectedItem } = storeToRefs(useItemsStore());
 const itemsStore = useItemsStore();
+
+const options: HasIdName[] = [
+  {
+    id: v4(),
+    name: TreeElementType.INPUT,
+  },
+  {
+    id: v4(),
+    name: TreeElementType.CHECKBOX,
+  },
+  {
+    id: v4(),
+    name: TreeElementType.SELECT,
+  },
+  {
+    id: v4(),
+    name: TreeElementType.BUTTON,
+  },
+];
+
+const selectedOption = ref<HasIdName>(options[0]);
+
+watch(
+  () => selectedItem.value,
+  () => {
+    if (
+      selectedItem.value !== null &&
+      selectedItem.value.type === TreeChildType.ELEMENT
+    ) {
+      selectedOption.value = options.find(
+        (el) => el.name === selectedItem.value?.value
+      );
+    } else {
+      selectedOption.value = options[0];
+    }
+  },
+  { immediate: true }
+);
 
 const addOption = () => {
   const newOption: HasIdName = {
@@ -68,18 +120,16 @@ const addOption = () => {
   };
 
   if (
-    selectedItem.value?.type === TreeElementType.ELEMENT &&
-    selectedItem.value.value === TreeElementValue.SELECT
+    selectedItem.value?.type === TreeChildType.ELEMENT &&
+    selectedItem.value.value === TreeElementType.SELECT
   ) {
     const updatedOptions = selectedItem.value.properties?.options;
     if (updatedOptions) {
       updatedOptions.push(newOption);
       const newProperties: SelectProps<HasIdName> = {
         options: updatedOptions,
-        modelValue: selectedItem.value.properties
-          ? selectedItem.value.properties.modelValue
-          : null,
-        label: "",
+        modelValue: selectedItem.value.properties?.modelValue || null,
+        label: selectedItem.value.properties?.label || "",
       };
       itemsStore.updateElementProperties(newProperties);
     }
@@ -88,28 +138,24 @@ const addOption = () => {
 
 const deleteOption = (optionId: string) => {
   if (
-    selectedItem.value?.type === TreeElementType.ELEMENT &&
-    selectedItem.value.value === TreeElementValue.SELECT
+    selectedItem.value?.type === TreeChildType.ELEMENT &&
+    selectedItem.value.value === TreeElementType.SELECT
   ) {
-    const updatedOptions = selectedItem.value.properties?.options;
-    if (updatedOptions) {
-      const deletedOption = selectedItem.value.properties?.options.find(
-        (el) => el.id === optionId
-      );
-
+    const options = selectedItem.value.properties?.options;
+    if (options) {
+      const deletedOption = options.find((el: HasIdName) => el.id === optionId);
       if (!deletedOption) return;
+
+      options.splice(options.indexOf(deletedOption), 1);
+
       if (deletedOption.id === selectedItem.value.properties?.modelValue?.id) {
-        selectedItem.value.properties.modelValue = null;
+        selectedItem.value.properties.modelValue = options[0];
       }
 
-      updatedOptions.splice(updatedOptions.indexOf(deletedOption), 1);
-
       const newProperties: SelectProps<HasIdName> = {
-        options: updatedOptions,
-        modelValue: selectedItem.value.properties
-          ? selectedItem.value.properties.modelValue
-          : null,
-        label: "",
+        options: options,
+        modelValue: selectedItem.value.properties?.modelValue || null,
+        label: selectedItem.value.properties?.label || "",
       };
       itemsStore.updateElementProperties(newProperties);
     }
@@ -122,12 +168,12 @@ const selectOption = (option: HasIdName) => {
 
 const changeButton = (functionName: "submit" | "reset" | undefined) => {
   if (
-    selectedItem.value?.type === TreeElementType.ELEMENT &&
-    selectedItem.value.value === TreeElementValue.BUTTON &&
+    selectedItem.value?.type === TreeChildType.ELEMENT &&
+    selectedItem.value.value === TreeElementType.BUTTON &&
     selectedItem.value.properties
   ) {
     const newProperties: ButtonProps = {
-      label: selectedItem.value.properties.label,
+      label: selectedItem.value.properties.label || "",
       function: functionName,
     };
     itemsStore.updateElementProperties(newProperties);
@@ -146,6 +192,10 @@ const changeButton = (functionName: "submit" | "reset" | undefined) => {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 2rem;
+
+    &--select {
+      margin-bottom: 0;
+    }
   }
 }
 </style>
