@@ -4,7 +4,9 @@
       <UITextField
         :label="label"
         :readonly="true"
+        :isSelect="true"
         v-model="selectedOption.name"
+        @click="isListOpen = !isListOpen"
       />
       <ArrowIcon
         class="select__icon"
@@ -30,16 +32,17 @@
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import type { HasIdName, TreeChildType } from "@/types/navigatorTree";
+import type { HasIdName } from "@/types/navigatorTree";
 import { onClickOutside } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import { useItemsStore } from "@/store/items";
 import UITextField from "./UITextField.vue";
 import ArrowIcon from "../../assets/icons/arrow.svg";
+import { v4 } from "uuid";
 
 type PropType = {
   options: HasIdName[];
-  modelValue: HasIdName;
+  modelValue: HasIdName | null;
   label: string;
 };
 
@@ -60,12 +63,17 @@ const select = (option: HasIdName) => {
   isListOpen.value = false;
 };
 
-const { selectedItem } = storeToRefs(useItemsStore());
-
 watch(
   () => props.modelValue,
   () => {
-    selectedOption.value = props.modelValue;
+    if (props.modelValue) {
+      selectedOption.value = props.modelValue;
+    } else {
+      selectedOption.value = {
+        id: v4(),
+        name: "",
+      };
+    }
   },
   { immediate: true }
 );

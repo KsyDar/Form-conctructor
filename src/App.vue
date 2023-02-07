@@ -1,16 +1,10 @@
 <template>
   <div class="main-wrapper">
-    <Navigator />
-    <Maket />
-    <Properties />
+    <router-view></router-view>
   </div>
 </template>
 
-<script setup lang="ts">
-import Navigator from "./components/navigator/Navigator.vue";
-import Maket from "./components/maket/Maket.vue";
-import Properties from "./components/properties/Properties.vue";
-</script>
+<script setup lang="ts"></script>
 
 <style scoped lang="scss">
 @use "@/assets/styles/variables" as *;

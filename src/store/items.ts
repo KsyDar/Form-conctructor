@@ -56,7 +56,7 @@ export const useItemsStore = defineStore("items", {
           },
         ];
 
-    const selectedItem = items[0];
+    const selectedItem = items.length !== 0 ? items[0] : null;
     return {
       items,
       selectedItem,
@@ -78,6 +78,7 @@ export const useItemsStore = defineStore("items", {
         this.items.push(newItem);
       }
 
+      this.selectedItem = newItem;
       this.saveChanges();
     },
 
@@ -136,7 +137,6 @@ export const useItemsStore = defineStore("items", {
 
         this.selectedItem.value = TreeElementType.INPUT;
         this.addProperties();
-        console.log(this.selectedItem.properties);
       }
 
       this.saveChanges();
@@ -209,6 +209,16 @@ export const useItemsStore = defineStore("items", {
         this.selectedItem.value === TreeElementType.SELECT
       ) {
         this.selectedItem.properties.modelValue = option;
+      }
+    },
+
+    unselectOption(): void {
+      if (
+        this.selectedItem &&
+        this.selectedItem.type === TreeChildType.ELEMENT &&
+        this.selectedItem.value === TreeElementType.SELECT
+      ) {
+        this.selectedItem.properties.modelValue = null;
       }
     },
 

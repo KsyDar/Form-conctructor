@@ -27,7 +27,7 @@ const { items: tree } = storeToRefs(useItemsStore());
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   border-radius: 10px;
   margin: 1rem;
-  width: 60%;
+  width: 100%;
 
   &__tree {
     display: flex;

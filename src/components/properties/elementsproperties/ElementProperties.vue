@@ -43,7 +43,8 @@
         v-model="selectedItem.properties.modelValue"
         @addOption="addOption()"
         @deleteOption="deleteOption($event)"
-        @selectOption="selectOption($event)"
+        @selectOption="itemsStore.selectOption($event)"
+        @unselectOption="itemsStore.unselectOption"
       />
     </li>
 
@@ -61,7 +62,11 @@ import SelectProperties from "./SelectProperties.vue";
 import ButtonProperties from "./ButtonProperties.vue";
 import UIselect from "@/components/ui/UIselect.vue";
 import UITextField from "@/components/ui/UITextField.vue";
-import { TreeChildType, TreeElementType } from "@/types/navigatorTree";
+import {
+  ButtonType,
+  TreeChildType,
+  TreeElementType,
+} from "@/types/navigatorTree";
 import type {
   HasIdName,
   SelectProps,
@@ -162,11 +167,7 @@ const deleteOption = (optionId: string) => {
   }
 };
 
-const selectOption = (option: HasIdName) => {
-  itemsStore.selectOption(option);
-};
-
-const changeButton = (functionName: "submit" | "reset" | undefined) => {
+const changeButton = (functionName: ButtonType | undefined) => {
   if (
     selectedItem.value?.type === TreeChildType.ELEMENT &&
     selectedItem.value.value === TreeElementType.BUTTON &&

@@ -5,7 +5,10 @@
       v-for="option in options"
       :key="option.id"
     >
-      <StarIcon v-if="selectedOption(option.id)" />
+      <StarIcon
+        v-if="selectedOption(option.id)"
+        @click="emits('unselectOption')"
+      />
       <EmptyStarIcon v-else @click="emits('selectOption', option)" />
       <UITextField v-model="option.name" :label="'Имя опции'" />
       <DeleteIcon
@@ -14,48 +17,13 @@
         v-if="options.length > 1"
       />
     </div>
-    <!-- <ul class="select-properties__col">
-        <li class="select-properties__row">Название</li>
-        <li
-          class="select-properties__row"
-          v-for="option in options"
-          :key="option.id"
-          style="display: flex"
-        >
-          <div
-            class="select-properties__mark"
-            @click="emits('selectOption', option)"
-          >
-            <span v-if="selectedOption(option.id)">*</span>
-          </div>
-          <input
-            class="select-properties__input"
-            :class="{
-              'select-properties__input--selected': selectedOption(option.id),
-            }"
-            type="text"
-            v-model="option.name"
-          />
-        </li>
-      </ul>
-      <ul class="select-properties__col">
-        <li class="select-properties__row">Удалить</li>
-        <li
-          class="select-properties__row"
-          v-for="option in options"
-          :key="option.id"
-        >
-          <button
-            @click="emits('deleteOption', option.id)"
-            v-if="options.length > 1"
-            class="button-minus"
-          >
-            -
-          </button>
-        </li>
-      </ul> -->
     <div class="select-properties__button">
-      <button @click="emits('addOption')" class="button-plus">+</button>
+      <button
+        @click="emits('addOption')"
+        class="default-button default-button--delete select-button"
+      >
+        +
+      </button>
     </div>
   </div>
 </template>
@@ -77,6 +45,7 @@ type EmitType = {
   (e: "addOption"): void;
   (e: "deleteOption", value: string): void;
   (e: "selectOption", value: HasIdName): void;
+  (e: "unselectOption"): void;
 };
 
 const props = defineProps<PropType>();
@@ -110,14 +79,16 @@ const selectedOption = (id: string) => {
     padding: 0.5rem;
     margin-bottom: 1rem;
   }
+
+  &__button {
+    display: flex;
+    justify-content: center;
+    font-weight: 700;
+  }
 }
 
-.button-plus {
-  padding: 0 2.5rem;
-  width: 100%;
-}
-
-.button-minus {
-  width: 100%;
+.select-button {
+  border-radius: 50%;
+  width: fit-content;
 }
 </style>
