@@ -3,7 +3,6 @@
     class="maket-tree__child"
     :class="{
       'maket-tree__child--element': child.type === TreeChildType.ELEMENT,
-      'maket-tree__child--element': child.type === TreeChildType.ELEMENT,
       'maket-tree__child--selected': child.id === selectedItem?.id,
     }"
     v-for="child in tree"

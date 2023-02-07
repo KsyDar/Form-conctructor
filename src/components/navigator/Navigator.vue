@@ -1,11 +1,11 @@
 <template>
   <div class="navigator">
     <div class="navigator__buttons">
-      <button class="navigator__buttons__item" @click="itemsStore.addItem">
+      <button class="default-button" @click="itemsStore.addItem">
         Создать
       </button>
       <button
-        class="navigator__buttons__item navigator__buttons__item--delete"
+        class="default-button default-button--delete"
         @click="itemsStore.deleteItem"
       >
         Удалить
@@ -57,40 +57,6 @@ const itemsStore = useItemsStore();
     box-shadow: rgba(67, 71, 85, 0.27) 0px 0px 0.25em,
       rgba(90, 125, 188, 0.05) 0px 0.25em 1em;
     padding: 1rem;
-
-    &__item {
-      background-image: linear-gradient(-180deg, #37aee2 0%, #1e96c8 100%);
-      border-radius: 5px;
-      color: $white-color;
-      display: flex;
-      font-size: 1.5rem;
-      justify-content: center;
-      padding: 1rem 1.75rem;
-      text-decoration: none;
-      width: 100%;
-      border: 0;
-      cursor: pointer;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: manipulation;
-
-      &:hover {
-        background-image: linear-gradient(-180deg, #1d95c9 0%, #17759c 100%);
-      }
-
-      &--delete {
-        color: $primary-font-color;
-        background: $white-color;
-        border: 1px solid $button-border-color;
-        margin-left: 0.5rem;
-
-        &:hover {
-          box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset,
-            rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
-          background-image: none;
-        }
-      }
-    }
   }
 
   &__title {

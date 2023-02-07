@@ -28,12 +28,13 @@
           <ElementProperties />
         </li>
       </ul>
-      <!-- <button
-        class="properties__list__button"
-        @click="itemsStore.saveChanges()"
+      <button
+        class="default-button"
+        @click="saveChanges"
+        style="width: fit-content"
       >
-        Сохранить
-      </button> -->
+        Предпросмотр
+      </button>
     </div>
     <h3 class="properties__subtitle" v-else>Выберите селектор!</h3>
   </div>
@@ -49,6 +50,7 @@ import { TreeChildType, TreeElementType } from "@/types/navigatorTree";
 import type { HasIdName } from "@/types/navigatorTree";
 import { v4 } from "uuid";
 import { ref, watch } from "vue";
+import router from "@/router";
 
 const { selectedItem } = storeToRefs(useItemsStore());
 const itemsStore = useItemsStore();
@@ -83,6 +85,11 @@ watch(
   },
   { immediate: true }
 );
+
+const saveChanges = () => {
+  itemsStore.saveChanges();
+  router.push({ name: "FormPreview" });
+};
 </script>
 
 <style scoped lang="scss">
@@ -132,20 +139,6 @@ watch(
       box-shadow: rgb(67 71 85 / 27%) 0px 0px 0.25em,
         rgb(90 125 188 / 5%) 0px 0.25em 1em;
       padding: 1rem;
-    }
-
-    &__button {
-      border-radius: 15%;
-      border: 2px solid $secondary-button-color;
-      color: $primary-button-color;
-      background: $light-purple-color;
-      padding: 1rem;
-      position: absolute;
-      top: 90%;
-
-      &:hover {
-        background: $secondary-hover-color;
-      }
     }
   }
 }

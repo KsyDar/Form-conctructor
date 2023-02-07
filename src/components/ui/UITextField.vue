@@ -1,6 +1,7 @@
 <template>
   <label class="text-field">
     <input
+      :class="{ 'text-field__input--select': isSelect }"
       :value="value"
       :placeholder="label"
       :maxlength="maxlength"
@@ -19,10 +20,11 @@
 import { ref, watch } from "vue";
 
 type PropType = {
-  modelValue?: string | null;
+  modelValue?: string;
   label: string;
   maxlength?: string;
   readonly?: boolean;
+  isSelect?: boolean;
 };
 
 interface EmitType {
@@ -34,6 +36,7 @@ const props = withDefaults(defineProps<PropType>(), {
   modelValue: "",
   maxlength: "30",
   readonly: false,
+  isSelect: false,
 });
 const emit = defineEmits<EmitType>();
 const value = ref("");
@@ -58,9 +61,9 @@ const changeElement = () => {
 /** событие при изменении элемента */
 const onInput = (event: Event) => {
   const newValue = (event.target as HTMLInputElement).value;
-  if (newValue) {
-    emit("update:modelValue", newValue);
-  }
+  console.log(newValue);
+
+  emit("update:modelValue", newValue);
 };
 </script>
 
@@ -114,6 +117,10 @@ const onInput = (event: Event) => {
         bottom: 1rem;
         margin-left: 1rem;
       }
+    }
+
+    &--select {
+      cursor: pointer !important;
     }
 
     &::placeholder {

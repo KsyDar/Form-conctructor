@@ -47,7 +47,7 @@ const isSelected = (childId: string) => {
   &--selected {
     color: $primary-font-color;
     font-weight: 600;
-    font-size: 2rem;
+    text-decoration: underline;
   }
 }
 </style>
