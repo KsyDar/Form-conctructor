@@ -1,14 +1,12 @@
 import type {
   ButtonProps,
   CheckboxProperties,
+  HasIdName,
   InputProperties,
-  NavigatorTree,
   SelectProps,
   TreeChild,
-  HasIdName,
-  Properties,
 } from "@/types/navigatorTree";
-import { TreeElementType, TreeChildType } from "@/types/navigatorTree";
+import { TreeChildType, TreeElementType } from "@/types/navigatorTree";
 import { defineStore } from "pinia";
 import { v4 } from "uuid";
 
@@ -44,9 +42,8 @@ export const useItemsStore = defineStore("items", {
                     name: "Элемент 1",
                     type: TreeChildType.ELEMENT,
                     value: TreeElementType.INPUT,
-                    children: [],
                     properties: {
-                      maxLength: "20",
+                      maxLength: 20,
                       label: "",
                     },
                   },
@@ -113,8 +110,7 @@ export const useItemsStore = defineStore("items", {
               ],
               modelValue: null,
             };
-            const selectedOption = element.properties.options[0];
-            element.properties.modelValue = selectedOption;
+            element.properties.modelValue = element.properties.options[0];
           }
           break;
         case TreeElementType.BUTTON:
@@ -128,17 +124,53 @@ export const useItemsStore = defineStore("items", {
 
     changeItemType(type: TreeChildType): void {
       if (!this.selectedItem) return;
-      this.selectedItem.type = type;
-
-      if (type === TreeChildType.ELEMENT) {
-        if (this.selectedItem.children.length !== 0) {
-          this.selectedItem.children.length = 0;
+      function getParent(
+        items: TreeChild[],
+        itemId: string,
+        parent?: TreeChild
+      ): TreeChild | undefined {
+        for (const child of items) {
+          if (child.id !== itemId) {
+            if (child.type === TreeChildType.ELEMENT) continue;
+            const foundParent = getParent(child.children, itemId, child);
+            if (foundParent) return foundParent;
+          } else {
+            return parent;
+          }
         }
-
-        this.selectedItem.value = TreeElementType.INPUT;
-        this.addProperties();
+        return undefined;
       }
-
+      const parent = getParent(this.items, this.selectedItem.id);
+      if (!parent || parent.type === TreeChildType.ELEMENT) return;
+      const index = parent.children.findIndex(
+        (item) => item.id === this.selectedItem?.id
+      );
+      if (type === TreeChildType.ELEMENT) {
+        this.selectedItem = {
+          id: this.selectedItem.id,
+          name: this.selectedItem.name,
+          type: type,
+          value: TreeElementType.INPUT,
+          properties: {
+            maxLength: 0,
+            label: "",
+          },
+        };
+        this.addProperties();
+      } else {
+        this.selectedItem = {
+          id: this.selectedItem.id,
+          name: this.selectedItem.name,
+          type: type,
+          children:
+            this.selectedItem.type !== TreeChildType.ELEMENT
+              ? this.selectedItem.children
+              : [],
+        };
+      }
+      if (this.selectedItem) {
+        parent.children[index] = this.selectedItem;
+      }
       this.saveChanges();
     },
 
@@ -156,23 +188,27 @@ export const useItemsStore = defineStore("items", {
     deleteItem(): void {
       if (!this.selectedItem) return;
       const selectedItemId = this.selectedItem.id;
-      let currentChilds: TreeChild[] | null = null;
+      let currentChild: TreeChild | null = null;
       getItem(this.items);
 
-      function getItem(items: TreeChild[]) {
+      function getItem(items: TreeChild[], parent: TreeChild | null = null) {
         for (const child of items) {
           if (child.id !== selectedItemId) {
-            if (currentChilds) return;
-            getItem(child.children);
+            if (currentChild || child.type === TreeChildType.ELEMENT) return;
+            getItem(child.children, child);
           } else {
             items.splice(items.indexOf(child), 1);
-            currentChilds = items;
+            if (items.length === 0) {
+              currentChild = parent;
+            } else {
+              currentChild = items[0];
+            }
           }
         }
       }
 
-      if (currentChilds) {
-        this.selectItem(currentChilds[0]);
+      if (currentChild) {
+        this.selectItem(currentChild);
         this.saveChanges();
       }
     },
@@ -194,7 +230,8 @@ export const useItemsStore = defineStore("items", {
     ): void {
       if (
         this.selectedItem &&
-        this.selectedItem.type === TreeChildType.ELEMENT
+        this.selectedItem.type === TreeChildType.ELEMENT &&
+        this.selectedItem.value !== TreeElementType.SPACER
       ) {
         this.selectedItem.properties = newProperties;
       }
@@ -206,7 +243,8 @@ export const useItemsStore = defineStore("items", {
       if (
         this.selectedItem &&
         this.selectedItem.type === TreeChildType.ELEMENT &&
-        this.selectedItem.value === TreeElementType.SELECT
+        this.selectedItem.value === TreeElementType.SELECT &&
+        this.selectedItem.properties
       ) {
         this.selectedItem.properties.modelValue = option;
       }
@@ -216,7 +254,8 @@ export const useItemsStore = defineStore("items", {
       if (
         this.selectedItem &&
         this.selectedItem.type === TreeChildType.ELEMENT &&
-        this.selectedItem.value === TreeElementType.SELECT
+        this.selectedItem.value === TreeElementType.SELECT &&
+        this.selectedItem.properties
       ) {
         this.selectedItem.properties.modelValue = null;
       }

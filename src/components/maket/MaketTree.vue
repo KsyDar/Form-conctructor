@@ -5,7 +5,7 @@
       'maket-tree__child--element': child.type === TreeChildType.ELEMENT,
       'maket-tree__child--selected': child.id === selectedItem?.id,
     }"
-    v-for="child in tree"
+    v-for="child in props.tree"
     :key="child.id"
     :style="{ 'flex-direction': getFlexDirection(child.type) }"
   >
@@ -23,13 +23,17 @@
 </template>
 
 <script setup lang="ts">
+// TYPES
 import type { TreeChild } from "@/types/navigatorTree";
 import { TreeChildType, TreeElementType } from "@/types/navigatorTree";
 import type { FlexDirectionProperty } from "csstype";
+// COMPONENTS
 import UITextField from "../ui/UITextField.vue";
-import UIcheckbox from "../ui/UIcheckbox.vue";
-import UIselect from "../ui/UIselect.vue";
-import UIbutton from "../ui/UIbutton.vue";
+import UICheckbox from "../ui/UICheckbox.vue";
+import UISelect from "../ui/UISelect.vue";
+import UIButton from "../ui/UIButton.vue";
+import UISpacer from "@/components/ui/UISpacer.vue";
+// STORE
 import { storeToRefs } from "pinia";
 import { useItemsStore } from "@/store/items";
 
@@ -49,19 +53,27 @@ const getFlexDirection = (childType: TreeChildType): FlexDirectionProperty => {
 };
 
 const element = (element: TreeChild) => {
+  if (element.type !== TreeChildType.ELEMENT)
+    throw new Error("Ожидался элемент");
+
   switch (element.value) {
     case TreeElementType.INPUT:
       return UITextField;
     case TreeElementType.CHECKBOX:
-      return UIcheckbox;
+      return UICheckbox;
     case TreeElementType.SELECT:
-      return UIselect;
+      return UISelect;
     case TreeElementType.BUTTON:
-      return UIbutton;
+      return UIButton;
+    case TreeElementType.SPACER:
+      return UISpacer;
   }
 };
 
 const elementProps = (element: TreeChild) => {
+  if (element.type !== TreeChildType.ELEMENT)
+    throw new Error("Ожидался элемент");
+
   return element.properties;
 };
 
@@ -70,29 +82,35 @@ const { selectedItem: selectedItem } = storeToRefs(useItemsStore());
 
 <style scoped lang="scss">
 @use "@/assets/styles/variables" as *;
+
 .maket-tree {
   &__child {
     display: flex;
-    align-items: stretch;
+    align-items: center;
     justify-content: center;
-    border: 1px solid #000;
+    border: 0.1rem solid #000;
     width: 100%;
     min-height: 5rem;
 
     &--selected {
-      border: 2px solid yellow;
+      border: 0.2rem solid yellow;
     }
 
     &--element {
-      border: none;
       margin: 1rem;
+
+      &:not(.maket-tree__child--selected) {
+        border: none;
+      }
     }
   }
 
   &__element {
+    width: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: left;
+    font-size: 1.5rem;
   }
 }
 </style>

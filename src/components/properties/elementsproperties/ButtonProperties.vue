@@ -1,6 +1,6 @@
 <template>
   <div class="button-props">
-    <UIselect
+    <UISelect
       :options="functions"
       :label="'Функция'"
       v-model="selectedFunction"
@@ -9,9 +9,12 @@
 </template>
 
 <script setup lang="ts">
-import UIselect from "@/components/ui/UIselect.vue";
+// COMPONENTS
+import UISelect from "@/components/ui/UISelect.vue";
+//  TYPES
 import { ButtonType } from "@/types/navigatorTree";
 import type { HasIdName } from "@/types/navigatorTree";
+//  FUNCTIONS
 import { ref, watch } from "vue";
 import { v4 } from "uuid";
 

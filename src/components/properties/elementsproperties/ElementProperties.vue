@@ -2,7 +2,8 @@
   <ul
     class="element-props"
     v-if="
-      selectedItem?.type === TreeChildType.ELEMENT && selectedItem.properties
+      selectedItem?.type === TreeChildType.ELEMENT &&
+      selectedItem.value !== TreeElementType.SPACER
     "
   >
     <li class="element-props__item">
@@ -14,13 +15,13 @@
     </li>
 
     <li class="element-props__item">
-      <UIselect
+      <UISelect
         v-model="selectedOption"
         :options="options"
         :label="'Вариант'"
         @changeItem="itemsStore.changeElementType($event)"
       >
-      </UIselect>
+      </UISelect>
     </li>
 
     <li
@@ -36,7 +37,7 @@
 
     <li
       class="element-props__item element-props__item--select"
-      v-if="selectedItem.value === TreeElementType.SELECT"
+      v-else-if="selectedItem.value === TreeElementType.SELECT"
     >
       <SelectProperties
         :options="selectedItem.properties.options"
@@ -50,7 +51,7 @@
 
     <li
       class="element-props__item"
-      v-if="selectedItem.value === TreeElementType.BUTTON"
+      v-else-if="selectedItem.value === TreeElementType.BUTTON"
     >
       <ButtonProperties @changeButton="changeButton($event)" />
     </li>
@@ -58,22 +59,27 @@
 </template>
 
 <script setup lang="ts">
+// COMPONENTS
 import SelectProperties from "./SelectProperties.vue";
 import ButtonProperties from "./ButtonProperties.vue";
-import UIselect from "@/components/ui/UIselect.vue";
+import UISelect from "@/components/ui/UISelect.vue";
 import UITextField from "@/components/ui/UITextField.vue";
+// TYPES
 import {
   ButtonType,
   TreeChildType,
   TreeElementType,
 } from "@/types/navigatorTree";
 import type {
+  TreeChild,
   HasIdName,
   SelectProps,
   ButtonProps,
 } from "@/types/navigatorTree";
+// STORE
 import { storeToRefs } from "pinia";
 import { useItemsStore } from "@/store/items";
+// FUNCTIONS
 import { v4 } from "uuid";
 import { ref, watch } from "vue";
 
@@ -97,20 +103,20 @@ const options: HasIdName[] = [
     id: v4(),
     name: TreeElementType.BUTTON,
   },
+  {
+    id: v4(),
+    name: TreeElementType.SPACER,
+  },
 ];
 
 const selectedOption = ref<HasIdName>(options[0]);
 
 watch(
   () => selectedItem.value,
-  () => {
-    if (
-      selectedItem.value !== null &&
-      selectedItem.value.type === TreeChildType.ELEMENT
-    ) {
-      selectedOption.value = options.find(
-        (el) => el.name === selectedItem.value?.value
-      );
+  (newVal: TreeChild | null) => {
+    if (newVal?.type === TreeChildType.ELEMENT) {
+      let elName = options.find((el) => el.name === newVal.value);
+      selectedOption.value = elName || options[0];
     } else {
       selectedOption.value = options[0];
     }
@@ -193,6 +199,10 @@ const changeButton = (functionName: ButtonType | undefined) => {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 2rem;
+
+    &--spacer {
+      flex-direction: column;
+    }
 
     &--select {
       margin-bottom: 0;

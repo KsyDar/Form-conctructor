@@ -20,13 +20,12 @@
 <script setup lang="ts">
 import { useItemsStore } from "@/store/items";
 import type { TreeChild } from "@/types/navigatorTree";
-import { storeToRefs } from "pinia";
 
 type PropType = {
   tree: Array<TreeChild> | null;
 };
 
-const props = defineProps<PropType>();
+defineProps<PropType>();
 
 const itemsStore = useItemsStore();
 
