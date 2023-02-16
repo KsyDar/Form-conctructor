@@ -12,13 +12,13 @@
         </li>
 
         <li class="properties__list__item">
-          <UIselect
+          <UISelect
             v-model="selectedOption"
             :options="options"
-            :label="'Тип элемента'"
             @changeItem="itemsStore.changeItemType($event)"
+            :label="'Тип элемента'"
           >
-          </UIselect>
+          </UISelect>
         </li>
 
         <li
@@ -41,13 +41,17 @@
 </template>
 
 <script setup lang="ts">
+// STORE
 import { useItemsStore } from "@/store/items";
 import { storeToRefs } from "pinia";
+// COMPONENTS
 import ElementProperties from "./elementsproperties/ElementProperties.vue";
-import UIselect from "../ui/UIselect.vue";
+import UISelect from "../ui/UISelect.vue";
 import UITextField from "../ui/UITextField.vue";
-import { TreeChildType, TreeElementType } from "@/types/navigatorTree";
+// TYPES
+import { TreeChildType } from "@/types/navigatorTree";
 import type { HasIdName } from "@/types/navigatorTree";
+// FUNCTIONS
 import { v4 } from "uuid";
 import { ref, watch } from "vue";
 import router from "@/router";
@@ -76,9 +80,9 @@ watch(
   () => selectedItem.value,
   () => {
     if (selectedItem.value !== null) {
-      selectedOption.value = options.find(
-        (el) => el.name === selectedItem.value.type
-      );
+      selectedOption.value =
+        options.find((el) => el.name === selectedItem.value?.type) ||
+        options[0];
     } else {
       selectedOption.value = options[0];
     }
@@ -97,7 +101,7 @@ const saveChanges = () => {
 
 .properties {
   background: $white-color;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0 5px 15px;
   border-radius: 10px;
   margin: 1rem;
   display: flex;
@@ -136,8 +140,8 @@ const saveChanges = () => {
       align-items: flex-start;
       width: 100%;
       border-radius: 10px;
-      box-shadow: rgb(67 71 85 / 27%) 0px 0px 0.25em,
-        rgb(90 125 188 / 5%) 0px 0.25em 1em;
+      box-shadow: rgb(67 71 85 / 27%) 0 0 0.25em,
+        rgb(90 125 188 / 5%) 0 0.25em 1em;
       padding: 1rem;
     }
   }

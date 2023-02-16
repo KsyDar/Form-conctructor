@@ -1,7 +1,7 @@
 <template>
   <button
     class="default-button default-button--delete button-preview"
-    @click="router.push({ name: 'FormConstructor' })"
+    @click="goBack"
   >
     Назад
   </button>
@@ -11,6 +11,18 @@
 <script setup lang="ts">
 import Maket from "@/components/maket/Maket.vue";
 import router from "@/router";
+import { useItemsStore } from "@/store/items";
+import { onMounted } from "vue";
+
+const itemsStore = useItemsStore();
+
+onMounted(() => {
+  itemsStore.selectItem(null);
+});
+const goBack = () => {
+  router.push({ name: "FormConstructor" });
+  itemsStore.selectItem(itemsStore.items[0]);
+};
 </script>
 
 <style scoped lang="scss">

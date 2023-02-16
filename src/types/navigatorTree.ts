@@ -5,6 +5,7 @@ export interface HasName {
   /** имя  */
   name: string;
 }
+
 /**
  * Тип имеющий id
  */
@@ -35,6 +36,7 @@ export enum TreeElementType {
   CHECKBOX = "флаг",
   SELECT = "поле выбора",
   BUTTON = "кнопка",
+  SPACER = "разделитель",
 }
 
 /**
@@ -52,7 +54,9 @@ export type Properties =
   | InputProperties
   | CheckboxProperties
   | SelectProps<HasIdName>
-  | ButtonProps;
+  | ButtonProps
+  | SpacerProps;
+
 /**
  * Тип, имеющий label
  */
@@ -89,14 +93,41 @@ export interface ButtonProps extends HasLabel {
   function: ButtonType | undefined;
 }
 
+export interface SpacerProps {
+  width: string;
+  height: string;
+}
+
 /**
  * Часть дерева навигации
  */
-export interface TreeChild extends HasIdName {
-  type: TreeChildType;
-  value?: TreeElementType;
+export type TreeChild =
+  | TreeGroups<TreeChildType.ROW>
+  | TreeGroups<TreeChildType.COL>
+  | TreeChildGenericElement<TreeElementType.SELECT, SelectProps<HasIdName>>
+  | TreeChildGenericElement<TreeElementType.INPUT, InputProperties>
+  | TreeChildGenericElement<TreeElementType.CHECKBOX, CheckboxProperties>
+  | TreeChildGenericElement<TreeElementType.BUTTON, ButtonProps>
+  | TreeSpacer;
+
+export interface TreeGroups<T extends TreeChildType.COL | TreeChildType.ROW>
+  extends HasIdName {
+  type: T;
   children: TreeChild[];
-  properties?: Properties;
+}
+
+export interface TreeSpacer extends HasIdName {
+  type: TreeChildType.ELEMENT;
+  value: TreeElementType.SPACER;
+}
+
+export interface TreeChildGenericElement<
+  T extends Exclude<TreeElementType, TreeElementType.SPACER>,
+  P extends Properties
+> extends HasIdName {
+  type: TreeChildType.ELEMENT;
+  value: T;
+  properties: P;
 }
 
 /**

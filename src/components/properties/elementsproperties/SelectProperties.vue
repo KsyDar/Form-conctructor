@@ -1,21 +1,23 @@
-<template>
-  <div class="select-properties">
-    <div
-      class="select-properties__option"
-      v-for="option in options"
-      :key="option.id"
-    >
-      <StarIcon
-        v-if="selectedOption(option.id)"
-        @click="emits('unselectOption')"
-      />
-      <EmptyStarIcon v-else @click="emits('selectOption', option)" />
-      <UITextField v-model="option.name" :label="'Имя опции'" />
-      <DeleteIcon
-        style="width: 2rem; cursor: pointer"
-        @click="emits('deleteOption', option.id)"
-        v-if="options.length > 1"
-      />
+<template class="select-properties">
+  <div>
+    <div class="select-properties__options">
+      <div
+        class="select-properties__option"
+        v-for="option in options"
+        :key="option.id"
+      >
+        <StarIcon
+          v-if="selectedOption(option.id)"
+          @click="emits('unselectOption')"
+        />
+        <EmptyStarIcon v-else @click="emits('selectOption', option)" />
+        <UITextField v-model="option.name" :label="'Имя опции'" />
+        <DeleteIcon
+          style="width: 2rem; cursor: pointer"
+          @click="emits('deleteOption', option.id)"
+          v-if="options.length > 1"
+        />
+      </div>
     </div>
     <div class="select-properties__button">
       <button
@@ -63,13 +65,19 @@ const selectedOption = (id: string) => {
 .select-properties {
   display: flex;
   flex-direction: column;
-  font-size: 1.5rem;
-  width: 100%;
-  max-height: 30rem;
-  overflow: auto;
-  border-radius: 10px;
-  border: 2px solid $button-border-color;
-  padding: 1rem;
+  align-items: center;
+
+  &__options {
+    display: flex;
+    flex-direction: column;
+    font-size: 1.5rem;
+    width: 100%;
+    max-height: 25rem;
+    overflow: auto;
+    border-radius: 10px;
+    border: 2px solid $button-border-color;
+    padding: 1rem;
+  }
 
   &__option {
     display: flex;
@@ -88,7 +96,7 @@ const selectedOption = (id: string) => {
 }
 
 .select-button {
-  border-radius: 50%;
-  width: fit-content;
+  margin-top: 1rem;
+  font-size: 2rem;
 }
 </style>

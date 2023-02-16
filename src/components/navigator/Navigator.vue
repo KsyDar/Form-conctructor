@@ -27,9 +27,10 @@
 </template>
 
 <script setup lang="ts">
+// STORE
 import { useItemsStore } from "@/store/items";
-import type { TreeChild } from "@/types/navigatorTree";
 import { storeToRefs } from "pinia";
+// COMPONENTS
 import NavigatorTree from "./NavigatorTree.vue";
 
 const { items: tree } = storeToRefs(useItemsStore());
@@ -46,16 +47,16 @@ const itemsStore = useItemsStore();
   padding: 1rem;
   min-width: 30rem;
   background: $white-color;
-  box-shadow: rgba(14, 30, 37, 0.12) 0px 2px 4px 0px,
-    rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
+  box-shadow: rgba(14, 30, 37, 0.12) 0 2px 4px 0,
+    rgba(14, 30, 37, 0.32) 0 2px 16px 0;
 
   &__buttons {
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-radius: 10px;
-    box-shadow: rgba(67, 71, 85, 0.27) 0px 0px 0.25em,
-      rgba(90, 125, 188, 0.05) 0px 0.25em 1em;
+    box-shadow: rgba(67, 71, 85, 0.27) 0 0 0.25em,
+      rgba(90, 125, 188, 0.05) 0 0.25em 1em;
     padding: 1rem;
   }
 
@@ -70,8 +71,8 @@ const itemsStore = useItemsStore();
     padding: 1rem;
     font-size: 1.5rem;
     border-radius: 10px;
-    box-shadow: rgba(67, 71, 85, 0.27) 0px 0px 0.25em,
-      rgba(90, 125, 188, 0.05) 0px 0.25em 1em;
+    box-shadow: rgba(67, 71, 85, 0.27) 0 0 0.25em,
+      rgba(90, 125, 188, 0.05) 0 0.25em 1em;
   }
 
   &__tree {

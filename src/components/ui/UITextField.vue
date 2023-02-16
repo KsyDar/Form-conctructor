@@ -4,7 +4,7 @@
       :class="{ 'text-field__input--select': isSelect }"
       :value="value"
       :placeholder="label"
-      :maxlength="maxlength"
+      :maxlength="maxLength"
       :readonly="readonly"
       class="text-field__input text-field__input--default"
       @change="changeElement"
@@ -22,7 +22,7 @@ import { ref, watch } from "vue";
 type PropType = {
   modelValue?: string;
   label: string;
-  maxlength?: string;
+  maxLength?: string;
   readonly?: boolean;
   isSelect?: boolean;
 };
@@ -61,8 +61,6 @@ const changeElement = () => {
 /** событие при изменении элемента */
 const onInput = (event: Event) => {
   const newValue = (event.target as HTMLInputElement).value;
-  console.log(newValue);
-
   emit("update:modelValue", newValue);
 };
 </script>
